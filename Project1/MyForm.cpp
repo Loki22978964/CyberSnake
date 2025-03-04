@@ -11,8 +11,5 @@ int main(array<String^>^ args) {
 	SyberSnake::MyForm form;
 
 	Application::Run(% form);
-	//asdadasdadsadasdassssssssssssssssssssssssssssssssss
-	//asddddddddddddddddddddddddddddddddddddddd
-	ina a = 228;
-	
+
 }
