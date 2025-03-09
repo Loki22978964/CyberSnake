@@ -11,6 +11,7 @@ namespace SyberSnake {
 	using namespace System::Windows::Forms;
 	using namespace System::Data;
 	using namespace System::Drawing;
+	using namespace System::Collections::Generic;
 
 	/// <summary>
 	/// Summary for MyForm
@@ -45,21 +46,23 @@ namespace SyberSnake {
 			g->FillRectangle(fruitBrush, fruitPosition.X, fruitPosition.Y, blockSize, blockSize);
 
 			Brush^ snakeBrush = gcnew SolidBrush(Color::Green);
-			g->FillRectangle(snakeBrush, snakePosition.X, snakePosition.Y, blockSize, blockSize);
+			for each(Point el in snake) {
+				g->FillRectangle(snakeBrush, el.X, el.Y, blockSize, blockSize);
+			}
 		}
 
 	private:
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
-		System::ComponentModel::Container^ components;
+		System::ComponentModel::Container ^components;
 
-		Point snakePosition;
+		List<Point>^ snake;
 		Point fruitPosition;
 		const int blockSize = 20;
 		Timer^ timer;
-		int moveX = 0, moveY = 0;
-
+		int moveX = 0 , moveY = 0;
+			
 #pragma region Windows Form Designer generated code
 		/// <summary>
 		/// Required method for Designer support - do not modify
@@ -74,20 +77,21 @@ namespace SyberSnake {
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->ClientSize = System::Drawing::Size(400, 400);
-
+			
 			this->Text = L"SyberSnake";
 			this->BackColor = Color::Black;
 			this->ResumeLayout(false);
 
 
 
-			snakePosition = Point(100, 100);
+			snake = gcnew List<Point>();
+			snake->Add( Point(100, 100));
 			srand(time(NULL));
 			PlaceFruit();
 
 			timer = gcnew Timer();
 			timer->Interval = 200; //game speed
-			timer->Tick += gcnew EventHandler(this, &MyForm::OnTimerTick);
+			timer->Tick += gcnew EventHandler(this , &MyForm::OnTimerTick);
 			timer->Start();
 
 
@@ -101,17 +105,41 @@ namespace SyberSnake {
 			int maxX = this->ClientSize.Width / blockSize;
 			int maxY = this->ClientSize.Height / blockSize;
 
-			fruitPosition = Point((rand() % maxX) * blockSize, (rand() % maxY) * blockSize);
+			do {
+				fruitPosition = Point((rand() % maxX) * blockSize, (rand() % maxY) * blockSize);
+			} while (snake->Contains(fruitPosition)); 
 		}
 
-		void OnTimerTick(Object^ obj, EventArgs^ e) {
-			snakePosition.X += moveX * blockSize;
-			snakePosition.Y += moveY * blockSize;
+		void OnTimerTick(Object^ obj , EventArgs^ e) {
+			MoveSnake();
 
-			this->Invalidate();
+			if (snake[0] == fruitPosition) {
+				GrowthSnake();
+				PlaceFruit();
+			}
+
+			this->Invalidate(); 
 		}
 
-		void OnKeyDown(Object^ obj, KeyEventArgs^ e) {
+		void MoveSnake() {
+			Point newHead = snake[0];
+
+			newHead.X += moveX * blockSize; 
+			newHead.Y += moveY * blockSize;
+			snake->Insert(0, newHead);
+			snake->RemoveAt(snake->Count - 1);
+		}
+
+		void GrowthSnake() {
+			Point newHead = snake[0];
+
+			newHead.X += moveX * blockSize;
+			newHead.Y += moveY * blockSize; 
+			snake->Insert(0, newHead);
+			
+		}
+
+		void OnKeyDown(Object^ obj, KeyEventArgs^ e){
 			switch (e->KeyCode) {
 			case Keys::Up:
 				moveX = 0;
